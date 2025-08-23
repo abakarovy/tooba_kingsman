@@ -11,7 +11,7 @@ class DiscountCardPage extends StatefulWidget {
 
 class _DiscountPageState extends State<DiscountCardPage>{
   bool _menuOpen = false;
-  late QrImageView qrWidget;
+  late QrImageView? qrWidget;
 
   void _toggleMenu() {
     setState(() {
@@ -20,12 +20,136 @@ class _DiscountPageState extends State<DiscountCardPage>{
   }
 
   void _updateQrSize(data, size) {
-    if (qrWidget.size! == size) return;
-    qrWidget = QrImageView(
-      data: data,
-      version: QrVersions.auto,
-      backgroundColor: Colors.white,
-      size: size,
+    if (qrWidget?.size == size) return;
+    qrWidget = null;
+    setState(() {
+      qrWidget = QrImageView(
+        data: data,
+        version: QrVersions.auto,
+        backgroundColor: Colors.white,
+        size: size,
+      );
+    });
+  }
+
+  void showProfileDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          child: FractionallySizedBox(
+            widthFactor: 0.8,
+            heightFactor: 0.5,
+            child: Container(
+                child: Column(
+                  children: [
+                    Flex(
+                      direction: Axis.horizontal,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Личные данные'),
+                        IconButton(onPressed: () {Navigator.of(context).pop();}, icon: Icon(Icons.close))
+                      ],
+                    ),
+                    SizedBox(height: 20,),
+                    Column(
+                      children: [
+                        TextField(
+                          style: TextStyle(color: Color(0xff282A51)),
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xff282A51), width: 2)),
+                            label: Text('ФИО'),
+                          ),
+                        ),
+                        SizedBox(height: 16,),
+                        TextField(
+                          style: TextStyle(color: Color(0xff282A51)),
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xff282A51), width: 2)),
+                            label: Text('Номер телефона'),
+                          ),
+                        ),
+                        SizedBox(height: 50,),
+                        Flex(
+                          direction: Axis.horizontal,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Color(0xff282A51),
+                                borderRadius: BorderRadius.circular(16)
+                              ),
+                              child: Column(
+                                children: [
+                                  Text('Номер телефона', style: TextStyle(color: Colors.white60),),
+                                  Text('+7 (___) ___-__-__', style: TextStyle(color: Colors.white))
+                                ],
+                              ),
+                            ),
+                            Container(
+                              child: Image.asset('assets/images/logo.png', width: 40, height: 40, color: Color(0xff282A51),),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ],
+                )
+              )
+          ) 
+        );
+      }
+    );
+  }
+
+  void showNotificationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          child: FractionallySizedBox(
+            widthFactor: 0.8,
+            heightFactor: 0.4,
+            child: Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flex(
+                    direction: Axis.horizontal,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(onPressed: () {Navigator.of(context).pop();}, icon: Icon(Icons.close))
+                    ],
+                  ),
+                  Text('Разрешить\nMR. KINGSMAN\nотправлять\nуведомления?', style: TextStyle(fontSize: 20, color: Color(0xff282A51), fontWeight: FontWeight.w700),),
+                  Flex(
+                    direction: Axis.horizontal,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Checkbox(value: false, onChanged: (value) {}),
+                      Text('Отправляйте мне уведомления')
+                    ],
+                  ),
+                  const Spacer(),
+                  Flex(
+                    direction: Axis.horizontal,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Image.asset('assets/images/logo.png', color: Color(0xff282A51), height: 40, width: 40,)
+                    ],
+                  ),
+                  const Spacer()
+                ]
+              )
+            ),
+          )
+        );
+      }
     );
   }
 
@@ -155,7 +279,7 @@ class _DiscountPageState extends State<DiscountCardPage>{
                                           ),
                                         ),
                                         padding: const EdgeInsets.all(4),
-                                        child: qrWidget,
+                                        child: qrWidget ?? CircularProgressIndicator(),
                                       ),
                                     ],
                                   ),
@@ -171,7 +295,12 @@ class _DiscountPageState extends State<DiscountCardPage>{
                                   ),
                                   // const Spacer(),
                                   // Gentleman badge
-                                  Container(
+                                  const Spacer(),
+                                  // Прогресс-бар и уровень
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -185,13 +314,9 @@ class _DiscountPageState extends State<DiscountCardPage>{
                                       ),
                                     ),
                                   ),
-                                  const Spacer(),
-                                  // Прогресс-бар и уровень
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
                                       const Text(
                                         'До уровня Sir: 3 000 ₽ из 10 000 ₽',
+                                        overflow: TextOverflow.clip,
                                         softWrap: false,
                                         style: TextStyle(
                                           fontSize: 14,
@@ -322,8 +447,8 @@ class _DiscountPageState extends State<DiscountCardPage>{
                         SizedBox(height: 30,),
                         TextButton.icon(
                           onPressed: () {
-                            // TODO: Навигация на профиль
                             setState(() => _menuOpen = false);
+                            showProfileDialog(context);
                           },
                           icon: const Icon(Icons.person, color: Colors.white),
                           label: const Text('Мой профиль', style: TextStyle(color: Colors.white)),
@@ -331,8 +456,8 @@ class _DiscountPageState extends State<DiscountCardPage>{
                         ),
                         TextButton.icon(
                           onPressed: () {
-                            // TODO: Навигация на уведомления
                             setState(() => _menuOpen = false);
+                            showNotificationDialog();
                           },
                           icon: const Icon(Icons.notifications, color: Colors.white),
                           label: const Text('Уведомления', style: TextStyle(color: Colors.white)),
