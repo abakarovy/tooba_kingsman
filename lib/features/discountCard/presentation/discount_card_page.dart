@@ -1,9 +1,13 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kingsman_mobileapp/features/auth/presentation/main_page.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class DiscountCardPage extends StatefulWidget {
   const DiscountCardPage({Key? key}) : super(key: key);
+
 
   @override
   State<DiscountCardPage> createState() => _DiscountPageState();
@@ -11,7 +15,10 @@ class DiscountCardPage extends StatefulWidget {
 
 class _DiscountPageState extends State<DiscountCardPage>{
   bool _menuOpen = false;
-  late QrImageView? qrWidget;
+  late Widget? qrWidget;
+  late double qrSize = 120;
+
+  String qrLink = 'https://tbank.ru/cf/61QjJ37firm';
 
   void _toggleMenu() {
     setState(() {
@@ -20,15 +27,22 @@ class _DiscountPageState extends State<DiscountCardPage>{
   }
 
   void _updateQrSize(data, size) {
-    if (qrWidget?.size == size) return;
+    if (qrSize == size) return;
+    qrSize = size;
     qrWidget = null;
     setState(() {
-      qrWidget = QrImageView(
+      qrWidget = Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: QrImageView(
         data: data,
         version: QrVersions.auto,
-        backgroundColor: Colors.white,
         size: size,
-      );
+        backgroundColor: Colors.transparent,
+      )
+    );
     });
   }
 
@@ -132,7 +146,9 @@ class _DiscountPageState extends State<DiscountCardPage>{
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Checkbox(value: false, onChanged: (value) {}),
-                      Text('Отправляйте мне уведомления')
+                      Expanded(
+                        child: Text('Отправляйте мне уведомления', maxLines: 4, overflow: TextOverflow.visible, softWrap: true)
+                      )
                     ],
                   ),
                   const Spacer(),
@@ -153,14 +169,69 @@ class _DiscountPageState extends State<DiscountCardPage>{
     );
   }
 
+  void showQrMagnified() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Builder(
+            builder: (context) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final dialogWidth = screenWidth * 0.9;
+              final maxDialogWidth = 400.0;
+              return Container(
+                width: dialogWidth > maxDialogWidth ? maxDialogWidth : dialogWidth,
+                padding: EdgeInsets.all(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    QrImageView(
+                      data: qrLink,
+                      version: QrVersions.auto,
+                      size: 240, // Large size for easy scanning
+                      backgroundColor: Colors.white,
+                      padding: EdgeInsets.zero,
+                    ),
+                    SizedBox(height: 30,),
+                    Text(
+                      'Отсканируйте QR-код',
+                      style: TextStyle(fontSize: 16, color: Color(0xff282A51), fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    qrWidget = QrImageView(
-      data: 'https://habr.com/ru/search/?q=firebase+push&target_type=posts&order=relevance',
-      version: QrVersions.auto,
-      size: 120,
-      backgroundColor: Colors.white,
+    qrWidget = Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: QrImageView(
+        data: qrLink,
+        version: QrVersions.auto,
+        size: qrSize,
+        backgroundColor: Colors.white,
+      )
     );
   }
 
@@ -170,7 +241,7 @@ class _DiscountPageState extends State<DiscountCardPage>{
     final cardWidth = width * 0.9 > 400 ? 400.0 : width * 0.9;
     final cardHeight = cardWidth * 1.2;
 
-    _updateQrSize('https://habr.com/ru/search/?q=firebase+push&target_type=posts&order=relevance', cardHeight * 0.325);
+    _updateQrSize(qrLink, cardHeight * 0.325);
     return Scaffold(
       backgroundColor: const Color(0xFFEDE9E2),
       body: SafeArea(
@@ -215,199 +286,256 @@ class _DiscountPageState extends State<DiscountCardPage>{
                       padding: EdgeInsets.only(left: 24.0, bottom: 8),
                       child: Text(
                         'Ваша скидочная карта',
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                        style: TextStyle(fontSize: 25, color: Colors.black87),
                       ),
                     ),
                   ),
                   // Карта
                   Center(
-                    child: Container(
-                      width: cardWidth,
-                      height: cardHeight,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF282A51),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(28),
+                          bottomLeft: Radius.circular(28),
+                          bottomRight: Radius.circular(28),
+                        ),
+                        onTap: showQrMagnified,
+                        child: Container(
+                          width: cardWidth,
+                          height: cardHeight,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF282A51),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(4),
+                              topRight: Radius.circular(28),
+                              bottomLeft: Radius.circular(28),
+                              bottomRight: Radius.circular(28),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.4),
+                                blurRadius: 6,
+                                offset: const Offset(8, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Фоновое изображение для карты
-                            Image.asset(
-                              'assets/images/cardBg.png', // замените на ваш путь
-                              fit: BoxFit.cover,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(4),
+                              topRight: Radius.circular(28),
+                              bottomLeft: Radius.circular(28),
+                              bottomRight: Radius.circular(28),
                             ),
-                            // Полупрозрачный слой (опционально)
-                            Container(
-                              color: Colors.black.withOpacity(0.08),
-                            ),
-                            // Основное содержимое карты
-                            Padding(
-                              padding: EdgeInsets.all(cardHeight * 0.07),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Имя и QR-код
-                                  Row(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                // Фоновое изображение для карты
+                                Image.asset(
+                                  'assets/images/cardBg.png', // замените на ваш путь
+                                  fit: BoxFit.cover,
+                                ),
+                                // Полупрозрачный слой (опционально)
+                                Container(
+                                  color: Colors.black.withOpacity(0.08),
+                                ),
+                                // Основное содержимое карты
+                                Padding(
+                                  padding: EdgeInsets.all(cardHeight * 0.07),
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: Text(
-                                          'Имя',
-                                          style: TextStyle(
-                                            fontSize: cardHeight * 0.11,
-                                            color: Colors.white,
-                                            fontFamily: 'Georgia',
+                                      // Имя и QR-код
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              'Имя',
+                                              style: TextStyle(
+                                                fontSize: cardHeight * 0.11,
+                                                color: Colors.white,
+                                                fontFamily: 'Gotham Pro',
+                                              ),
+                                            ),
                                           ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.transparent,
+                                              borderRadius: BorderRadius.circular(12),
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 4,
+                                              ),
+                                            ),
+                                            padding: const EdgeInsets.all(4),
+                                            child: qrWidget ?? CircularProgressIndicator(),
+                                          ),
+                                        ],
+                                      ),
+                                      // SizedBox(height: cardHeight * 0.08),
+                                      // -10%
+                                      Text(
+                                        '-10%',
+                                        style: TextStyle(
+                                          fontSize: cardHeight * 0.23,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
                                         ),
                                       ),
-                                      Container(
+                                      // const Spacer(),
+                                      // Gentleman badge
+                                      const Spacer(),
+                                      // Прогресс-бар и уровень
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(16),
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 4,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text(
+                                          'Gentleman',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF282A51),
                                           ),
                                         ),
-                                        padding: const EdgeInsets.all(4),
-                                        child: qrWidget ?? CircularProgressIndicator(),
+                                      ),
+                                          const Text(
+                                            'До уровня Sir: 3 000 ₽ из 10 000 ₽',
+                                            overflow: TextOverflow.clip,
+                                            softWrap: false,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(8),
+                                            child: LinearProgressIndicator(
+                                              value: 0.3, // 3 000 из 10 000
+                                              minHeight: 6,
+                                              backgroundColor: Colors.white24,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  // SizedBox(height: cardHeight * 0.08),
-                                  // -10%
-                                  Text(
-                                    '-10%',
-                                    style: TextStyle(
-                                      fontSize: cardHeight * 0.23,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  // const Spacer(),
-                                  // Gentleman badge
-                                  const Spacer(),
-                                  // Прогресс-бар и уровень
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Text(
-                                      'Gentleman',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Color(0xFF282A51),
-                                      ),
-                                    ),
-                                  ),
-                                      const Text(
-                                        'До уровня Sir: 3 000 ₽ из 10 000 ₽',
-                                        overflow: TextOverflow.clip,
-                                        softWrap: false,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: LinearProgressIndicator(
-                                          value: 0.3, // 3 000 из 10 000
-                                          minHeight: 6,
-                                          backgroundColor: Colors.white24,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // Футер
                   Container(
-                    width: cardWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                    padding: EdgeInsets.symmetric(vertical: 24, horizontal: 18),
                     decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(24),
+                      // color: Color(0xFFF7F4F0),
+                      borderRadius: BorderRadius.zero,
                     ),
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: const [
-                            Expanded(
-                              child: Text(
+                        // Left Column
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                                 'Где нас найти?',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
                               ),
-                            ),
-                            Expanded(
-                              child: Text(
+                              SizedBox(height: 8),
+                              Text('Галерея Времена Года', style: TextStyle(color: Colors.black, fontSize: 12)),
+                              Text('Тверская 7', style: TextStyle(color: Colors.black, fontSize: 12)),
+                              Text('Балтийская 7', style: TextStyle(color: Colors.black, fontSize: 12)),
+                              Text('Ленинская 37', style: TextStyle(color: Colors.black, fontSize: 12)),
+                              SizedBox(height: 8),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'График 10:00 – 21:00',
+                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Center Column
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
                                 'Контакты',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: const [
-                            Expanded(
-                              child: Text(
-                                'Галерея Времена Года\nТверская 7\nБалтийская 7\nЛенинская 37',
-                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              SizedBox(height: 8),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(
+                                  // color: Color(0xFFEDEDED),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '+7 (999) 123-45-67',
+                                  style: TextStyle(color: Colors.black, fontSize: 12),
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                '7 (999) 123-45-67',
-                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              SizedBox(height: 6),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                                decoration: BoxDecoration(
+                                  // color: Color(0xFFEDEDED),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'info@mrkingsman.ru',
+                                  style: TextStyle(color: Colors.black, fontSize: 12),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Для заказа перейдите по ссылке',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.vaccines, color: Colors.white),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.telegram, color: Colors.white),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.camera_alt, color: Colors.white),
-                              onPressed: () {},
-                            ),
-                          ],
+                        // Right Column
+                        Flexible(
+                          flex: 0,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Image.asset('assets/images/logo.png', height: 28, width: 28, color: Colors.black),
+                              SizedBox(height: 4),
+                              Text(
+                                '@MR.KINGSMAN',
+                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                children: [
+                                  Icon(Icons.language, size: 20, color: Colors.black), // VK
+                                  Icon(Icons.send, size: 20, color: Colors.black), // Telegram
+                                  Icon(Icons.camera_alt, size: 20, color: Colors.black), // Instagram
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -419,7 +547,7 @@ class _DiscountPageState extends State<DiscountCardPage>{
             Positioned(
               top: 16,
               right: 16,
-              child: IconButton(onPressed: _toggleMenu, icon: Icon(Icons.menu,))
+              child: IconButton(onPressed: _toggleMenu, icon: Icon(Icons.menu, color: Colors.black))
             ),
             if (_menuOpen)...[
               Positioned(

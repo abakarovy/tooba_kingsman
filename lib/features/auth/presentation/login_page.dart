@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
+import 'package:kingsman_mobileapp/features/auth/presentation/password_reset_page.dart';
+import 'package:kingsman_mobileapp/features/auth/presentation/phone_input_reset_page.dart';
+import 'package:kingsman_mobileapp/features/discountCard/presentation/discount_card_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -11,6 +15,26 @@ class _LoginPageState extends State<LoginPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _agree = false;
+
+  bool _phoneFieldError = false;
+  bool _passwordFieldError = false;
+  bool _agreeError = false;
+
+  void signInRequest() {
+    final phone = _phoneController.text;
+    final password = _passwordController.text;
+
+    setState(() {
+      _phoneFieldError = phone.isEmpty || !isPhoneValid(phone);
+      _passwordFieldError = password.isEmpty;
+      _agreeError = !_agree;
+    });
+    if (phone.isEmpty || password.isEmpty || !_agree) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => DiscountCardPage())
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +71,21 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       style: const TextStyle(color: Colors.white),
+                      inputFormatters: [
+                        PhoneInputFormatter(
+                          defaultCountryCode: 'RU',
+                          allowEndlessPhone: false,
+                        ),
+                      ],
                       decoration: InputDecoration(
-                        hintText: 'Номер телефона',
+                        errorText: _phoneFieldError ? 'Не правильный номер телефона' : null,
+                        labelText: 'Номер телефона',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        hintText: '+7 (_ _ _)  _ _ _  _ _  _ _',
                         hintStyle: const TextStyle(color: Colors.white),
                         filled: true,
                         fillColor: const Color(0xff282A51),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
@@ -66,12 +98,13 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Пароль',
+                        errorText: _passwordFieldError ? 'Не правильный пароль' : null,
+                        labelText: 'Пароль',
+                        labelStyle: const TextStyle(color: Colors.white),
                         hintStyle: const TextStyle(color: Colors.white),
                         filled: true,
                         fillColor: Colors.black,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
@@ -84,6 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         Checkbox(
                           value: _agree,
+                          isError: _agreeError,
                           onChanged: (val) => setState(() => _agree = val ?? false),
                           activeColor: const Color(0xff282A51),
                         ),
@@ -117,9 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: () {
-                          // TODO: Навигация на регистрацию
-                        },
+                        onPressed: signInRequest,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xff282A51),
                           side: const BorderSide(color: Color(0xff282A51), width: 2),
@@ -146,12 +178,13 @@ class _LoginPageState extends State<LoginPage> {
                           foregroundColor: const Color(0xff282A51),
                           padding: EdgeInsets.zero,
                         ),
-                        child: const Text(
-                          'Восстановить пароль',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => PhoneInputResetPage())
+                            );
+                          },
+                          child: Text('Восстановить пароль'),
                         ),
                       ),
                     ),

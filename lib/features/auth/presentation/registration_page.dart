@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
+import 'package:kingsman_mobileapp/core/api_service.dart';
 import 'package:kingsman_mobileapp/features/discountCard/presentation/discount_card_page.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -14,26 +15,49 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _smsController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordVerifyController = TextEditingController();
+  final api = ApiService();
 
   String phoneNum = '';
   bool _phoneFieldEnabled = true;
+  bool _phoneFieldError = false;
   bool _smsFieldEnabled = true;
   bool _isLoading = false;
   bool _codeSent = false;
   bool _codeVerified = false;
   bool _passwordsValidated = true;
 
-  void _sendCode() {
-    setState(() { _isLoading = true; });
-    Future.delayed(const Duration(seconds: 2), () {
+  void _sendCode() async {
+    final phoneNum = _phoneController.text;
+    if (!isPhoneValid(phoneNum)) {
+      _phoneFieldError = true;
+      return;
+    } else {
+      _phoneFieldError = false;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+    Future.delayed(Duration(seconds: 2), () {
       setState(() {
         _isLoading = false;
         _codeSent = true;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('код отправлен'), duration: Duration(seconds: 2)),
-      );
     });
+    // final response = await api.sendSms(phoneNum);
+    // setState(() { _isLoading = true; });
+
+    // if (response.statusCode == 200) {
+    //   setState(() {
+    //     _isLoading = false;
+    //     _codeSent = true;
+    //   });
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('код отправлен'), duration: Duration(seconds: 2)),
+    //   );
+    // } else {
+    //   print(response.error);
+    // }
   }
 
   void _verifyCode(String value) {
@@ -129,7 +153,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           ),
                         ],
                         style: const TextStyle(color: Color(0xff282A51)),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
+                          errorText: _phoneFieldError ? 'Не правильный номер телефона' : null,
                           labelText: 'Номер телефона',
                           hintText: '+7 _ _ _  _ _ _  _ _  _ _',
                           border: OutlineInputBorder(),
