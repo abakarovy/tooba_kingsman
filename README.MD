@@ -1,3 +1,6 @@
-# kingsman_mobileapp
+# Мобильное приложение для Mr. Kingsman
 
-A new Flutter project.
+Написан на Flutter
+- Для запуска пропишите в командной строке ```строке flutter run```
+- Для сборки apk файла пропишите ```flutter build apk --release```
+
