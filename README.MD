@@ -48,7 +48,7 @@
 
 ## 🔧 Установка и запуск
 
-Готовый APK файл находится в [Релизе](https://github.com/abakarovy/tooba_kingsman/releases/download/1.0/mr-kingsman.apk)
+Готовый APK файл находится в релизах, или же по [этой ссылке](https://github.com/abakarovy/tooba_kingsman/releases/download/1.0/mr-kingsman.apk)
 ```bash
 # Клонирование репозитория
 git clone https://github.com/mrkingsman/app.git
