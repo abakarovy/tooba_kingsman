@@ -213,6 +213,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       TextField(
                         controller: _passwordController,
                         style: TextStyle(color: Color(0xff282A51)),
+                        keyboardType: TextInputType.visiblePassword,
                         decoration: InputDecoration(
                           label: Text('Придумайте пароль'),
                           errorText: !_passwordsValidated ? 'Пароли не совпадают' : null
@@ -222,6 +223,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       TextField(
                         controller: _passwordVerifyController,
                         style: TextStyle(color: Color(0xff282A51)),
+                        keyboardType: TextInputType.visiblePassword,
                         decoration: InputDecoration(
                           label: Text('Подтвердите пароль'),
                           errorText: !_passwordsValidated ? 'Пароли не совпадают' : null
