@@ -17,7 +17,7 @@
 ## 🛠 Технологический стек
 
 - **Frontend**: Flutter (iOS & Android)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions)
+- **Backend**: Python FastAPI, Firebase (Auth, Firestore, Cloud Functions), 1С
 - **AI/ML**: OpenAI GPT-4, компьютерное зрение
 - **Уведомления**: FCM, Twilio SMS
 - **Календари**: Google Calendar API
